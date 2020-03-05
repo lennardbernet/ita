@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import {Button, StyleSheet, Text, TextInput, View} from 'react-native';
+import {Button, ScrollView, StyleSheet, Text, TextInput, View} from 'react-native';
 import * as firebase from 'firebase';
 
 export default class DetailScreen extends Component {
@@ -8,17 +8,15 @@ export default class DetailScreen extends Component {
     };
 
     constructor() {
-        console.log(">>> DetailScreen/constructor");
         super();
         this.state = {
             workout: "",
             exercise: "",
-            sets: [],
+            sets: []
         }
     }
 
     getSets = (url) => {
-        console.log(">>> DetailScreen/getSets");
         fetch(url)
             .then(data => data.json())
             .then((data) => {
@@ -38,30 +36,23 @@ export default class DetailScreen extends Component {
     };
 
     saveSets() {
-        console.log(">>> DetailScreen/saveSets");
-        let params = this.props.navigation.getParam('exercise').toString().split("/");
         let sets = this.state.sets;
-        let dbWert = "";
-        dbWert += sets.length + "/";
-
-        sets.forEach((s, i) => {
-                dbWert += s[0] + "/" + s[1] + "/" + s[2] + "/"
+        let dbValue = "";
+        dbValue += sets.length + "/";
+        sets.forEach((s) => {
+                dbValue += s[0] + "/" + s[1] + "/" + s[2] + "/"
             }
         );
-        dbWert = dbWert.slice(0, -1);
-        console.log("vor db zugriff")
+        dbValue = dbValue.slice(0, -1);
         firebase.database().ref(this.state.workout + '/exercises/' + this.state.exercise).set({
-            sets: dbWert
+            sets: dbValue
         });
-
     }
 
     deleteSet(index) {
-        console.log(">>> DetailScreen/deleteSet");
-
         let sets = this.state.sets;
         sets.forEach((s, index2) => {
-            if (index == index2) {
+            if (index === index2) {
                 sets.splice(index, 1)
             }
         });
@@ -69,56 +60,52 @@ export default class DetailScreen extends Component {
     }
 
     changeSets(text, index, column) {
-        console.log("DetailScreen/changeSets");
-        console.log(text + "/" + index + "/" + column);
         let sets = this.state.sets;
         sets[index][column] = text;
         this.setState({sets: sets});
-        console.log(this.state.sets)
     }
 
     addSets() {
-        console.log(">>> DetailScreen/addSets");
-        console.log(this.state.sets);
         let sets = this.state.sets;
         let newSet = ['0', '0', '0'];
         sets.push(newSet);
         this.setState({sets: sets});
-        console.log(this.state.sets)
     }
 
     createSets() {
-        console.log(">>> DetailScreen/createSet");
         let sets = [];
         this.state.sets.forEach((s, index) => sets.push(
-            <View key={index} style={{backgroundColor:'red',marginBottom:7,flexDirection: 'row',}}>
-                <View style={{ flexDirection: 'row', alignItems: 'center'}}>
+            <View key={index}
+                  style={{maxWidth: '100%', marginBottom: 7, flexDirection: 'row',}}>
+                <View style={{flexDirection: 'row', alignItems: 'center'}}>
                     <Text>Sets:</Text>
                     <TextInput
                         style={styles.textInput}
                         onChangeText={text => this.changeSets(text, index, 0)}
                         value={this.state.sets[index][0]}
+                        keyboardType={'numeric'}
                     />
                 </View>
-                <View style={{ flexDirection: 'row', alignItems: 'center'}}>
+                <View style={{flexDirection: 'row', alignItems: 'center'}}>
                     <Text>Reps:</Text>
                     <TextInput
                         style={styles.textInput}
                         onChangeText={text => this.changeSets(text, index, 1)}
                         value={this.state.sets[index][1]}
+                        keyboardType={'numeric'}
                     />
                 </View>
-                <View style={{ flexDirection: 'row', alignItems: 'center'}}>
+                <View style={{flexDirection: 'row', alignItems: 'center'}}>
                     <Text>Kg:</Text>
                     <TextInput
                         style={styles.textInput}
                         onChangeText={text => this.changeSets(text, index, 2)}
                         value={this.state.sets[index][2]}
+                        keyboardType={'numeric'}
                     />
                 </View>
                 <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                    <Button stlye={{}}
-                            title="Löschen"
+                    <Button title="Löschen"
                             onPress={() => this.deleteSet(index)}
                     />
                 </View>
@@ -128,49 +115,64 @@ export default class DetailScreen extends Component {
     }
 
     componentDidMount() {
-        console.log(">>> DetailScreen/componentDidMount");
         let params = this.props.navigation.getParam('exercise').toString().split("/");
         this.setState({workout: params[0], exercise: params[1]});
         this.getSets('https://firsttry-66f87.firebaseio.com/' + params[0] + '/exercises/' + params[1] + '/sets/.json');
     }
 
     render() {
-        console.log(">>> DetailScreen/render");
-        let text = this.props.navigation.getParam('exercise');
         return (
-            <View style={{flex: 1, flexDirection: "column", alignItems: 'center', justifyContent: 'flex-start',width:'100%'}}>
-                <View style={{backgroundColor: 'red'}}>
-                    <Text>{this.state.workout}</Text>
+            <ScrollView>
+                <View style={{
+                    flex: 1,
+                    flexDirection: "column",
+                    alignItems: 'center',
+                    justifyContent: 'flex-start',
+                    width: '100%'
+                }}>
+                    <View style={{margin: 15}}>
+                        <Text style={{
+                            fontSize: 25,
+                            fontWeight: 'bold'
+                        }}>
+                            {this.state.workout.toString().toUpperCase()}
+                        </Text>
+                    </View>
+                    <View style={{marginBottom: 15}}>
+                        <Text
+                            style={{
+                                fontSize: 20,
+                                fontWeight: 'bold'
+                            }}>
+                            {this.state.exercise}
+                        </Text>
+                    </View>
+                    <View>
+                        {this.createSets()}
+                    </View>
+                    <View style={{width: '100%', padding: 20}}>
+                        <Button title="Set hinzufügen"
+                                onPress={() => this.addSets()}
+                        />
+                        <Text> </Text>
+                        <Button title="Speichern"
+                                onPress={() => this.saveSets()}
+                        />
+                        <Text> </Text>
+                        <Button title="Zurück"
+                                onPress={() => this.props.navigation.goBack()}
+                        />
+                    </View>
                 </View>
-                <View style={{}}>
-                    <Text>{this.state.exercise}</Text>
-                </View>
-                <View style={{}}>
-                    {this.createSets()}
-                </View>
-                <Button style={styles.button}
-                        title="Set hinzufügen"
-                        onPress={() => this.addSets()}
-                />
-                <Button style={styles.button}
-                        title="Speichern"
-                        onPress={() => this.saveSets()}
-                />
-                <Button style={styles.button}
-                        title="Zurück"
-                        onPress={() => this.props.navigation.goBack()}
-                />
-            </View>
+            </ScrollView>
         );
     }
 }
 const styles = StyleSheet.create({
     textInput: {
-        padding: 10,
-        backgroundColor:'orange'
+        padding: 5,
+        margin: 5,
+        backgroundColor: '#d1d1cf'
     },
-    button:{
-        margin:10,
-        minWidth:300
-    }
+    button: {marginTop: 20}
 });

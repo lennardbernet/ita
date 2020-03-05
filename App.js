@@ -3,9 +3,9 @@ import {StyleSheet} from 'react-native';
 import {createAppContainer} from "react-navigation";
 import {createStackNavigator} from "react-navigation-stack";
 import {createDrawerNavigator} from "react-navigation-drawer";
-import WorkoutScreen from "./WorkoutScreen";
+import ExerciseScreen from "./ExerciseScreen";
 import DetailScreen from "./DetailScreen";
-import HomeScreen from "./HomeScreen";
+import WorkoutScreen from "./WorkoutScreen";
 import * as firebase from 'firebase';
 
 const firebaseConfig = {
@@ -17,10 +17,9 @@ const firebaseConfig = {
 
 !firebase.apps.length ? firebase.initializeApp(firebaseConfig) : firebase.app();
 
-
 const AppNavigator = createStackNavigator({
-  Home: HomeScreen,
-  Workout:WorkoutScreen,
+  Home: WorkoutScreen,
+  Exercise:ExerciseScreen,
   Detail:DetailScreen
 });
 
@@ -29,7 +28,7 @@ const AppContainer = createAppContainer(AppNavigator);
 export default class App extends Component {
 
   render() {
-    console.log(">>> App/render")
+    console.log(">>> App/render");
     return (
         <AppContainer/>
     );
